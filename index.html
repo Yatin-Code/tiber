@@ -242,17 +242,23 @@
             margin: 20px 0;
         }
         .mcq-opt {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             border: 2px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 20px;
             color: var(--text-muted);
             transition: all 0.2s;
+            cursor: pointer; /* Enable pointer for desktop */
+            user-select: none;
+            background: white;
+        }
+        .mcq-opt:active {
+            transform: scale(0.95);
         }
         .mcq-opt.selected {
             background: var(--primary);
@@ -613,14 +619,16 @@
             
             /* Controls */
             .controls-row { flex-wrap: wrap; gap: 10px; }
-            .controls-row .btn { width: 48%; flex-grow: 1; padding: 12px 8px; font-size: 14px; }
+            .controls-row .btn { flex-grow: 1; padding: 12px 8px; font-size: 14px; }
+            .controls-row .btn-primary-mobile { width: 100%; order: -1; padding: 16px; font-size: 18px; } /* Large Next Button */
             
             /* Upload Buttons */
             .upload-actions-row { flex-direction: column; }
             .upload-actions-row .btn { width: 100%; }
 
             /* MCQ Options */
-            .mcq-opt { width: 45px; height: 45px; font-size: 16px; }
+            .mcq-options-row { gap: 10px; }
+            .mcq-opt { width: 55px; height: 55px; font-size: 18px; }
             
             /* Chart */
             .chart-container { height: 150px; }
@@ -792,13 +800,19 @@
 
                 <!-- MCQ Options (Only visible in MCQ Mode) -->
                 <div id="mcqOptionsArea" class="mcq-options-row" style="display:none;">
-                    <div class="mcq-opt" id="optA">A</div>
-                    <div class="mcq-opt" id="optB">B</div>
-                    <div class="mcq-opt" id="optC">C</div>
-                    <div class="mcq-opt" id="optD">D</div>
+                    <div class="mcq-opt" id="optA" onclick="app.selectMCQOption('A')">A</div>
+                    <div class="mcq-opt" id="optB" onclick="app.selectMCQOption('B')">B</div>
+                    <div class="mcq-opt" id="optC" onclick="app.selectMCQOption('C')">C</div>
+                    <div class="mcq-opt" id="optD" onclick="app.selectMCQOption('D')">D</div>
                 </div>
                 
                 <div class="controls-row">
+                    <!-- MAIN ACTION BUTTON (Next/Submit) - Primarily for Mobile/Touch -->
+                    <button class="btn btn-primary btn-primary-mobile" onclick="app.nextQuestion(false)" style="background: var(--success); border-color: var(--success);">
+                        <svg class="icon" viewBox="0 0 24 24" style="color:white"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Submit / Next
+                    </button>
+
                     <button class="btn btn-secondary" onclick="app.togglePause()" id="pauseBtn">
                         <svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                         Pause
@@ -811,20 +825,20 @@
 
                     <button class="btn btn-secondary" onclick="app.openManualLog()" title="Log time manually">
                          <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        Already Done?
+                        Manual
                     </button>
 
                     <button class="btn btn-secondary" id="undoBtn" onclick="app.restartQuestion()" title="Restart current question timer">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/></svg>
-                        Restart Q
+                        Reset
                     </button>
                     <button class="btn btn-danger" onclick="app.saveAndExit()">
-                        Save & Exit
+                        Exit
                     </button>
                 </div>
 
                 <div class="helper-text" id="helperText">
-                    Solve in your workbook. Press <kbd>ENTER</kbd> when done.<br>
+                    Solve in your workbook. Press <kbd>ENTER</kbd> or tap Submit when done.<br>
                     Press <kbd>SPACE</kbd> to Pause/Resume. <kbd>S</kbd> to Skip. <kbd>Q</kbd> to Restart.
                 </div>
             </div>
@@ -844,12 +858,12 @@
                     <button class="grade-btn grade-wrong" onclick="app.markGrade(false)">
                         <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         WRONG
-                        <span class="grade-key">Press Space</span>
+                        <span class="grade-key">Space</span>
                     </button>
                     <button class="grade-btn grade-correct" onclick="app.markGrade(true)">
                         <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         CORRECT
-                        <span class="grade-key">Press Enter</span>
+                        <span class="grade-key">Enter</span>
                     </button>
                 </div>
             </div>
