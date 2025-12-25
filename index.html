@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiber - Advanced Exam Timer</title>
+    <style>
+        :root {
+            /* Modern Palette */
+            --primary: #6366f1;       /* Indigo */
+            --primary-dark: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #64748b;     /* Slate */
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-surface);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* HEADER */
+        .app-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* SECTIONS (View Management) */
+        .view-section {
+            display: none;
+            padding: 32px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Custom Checkbox Toggle */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .toggle-wrapper:hover { background: #e2e8f0; }
+        .toggle-wrapper input { width: auto; margin-right: 10px; transform: scale(1.2); }
+        .toggle-text strong { display: block; color: var(--text-main); }
+        .toggle-text span { font-size: 12px; color: var(--text-muted); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-secondary { background: #f1f5f9; color: var(--text-main); }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-danger:hover { background: #fecaca; }
+
+        .btn-outline { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); width: 100%; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
+
+        /* UPLOAD AREA */
+        .upload-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 30px 0 20px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .upload-divider::before, .upload-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .upload-divider:not(:empty)::before { margin-right: .5em; }
+        .upload-divider:not(:empty)::after { margin-left: .5em; }
+
+        .trend-upload-btn {
+            border: 2px solid #e0e7ff;
+            color: var(--primary);
+            background: #fff;
+            width: 100%;
+        }
+        .trend-upload-btn:hover { background: #e0e7ff; }
+
+        /* TIMER VIEW */
+        .timer-layout {
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-badge {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 120px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+            margin: 20px 0;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -4px;
+        }
+
+        .timer-display.warning { color: var(--warning); }
+        .timer-display.danger { color: var(--danger); }
+
+        /* MCQ OPTIONS DISPLAY */
+        .mcq-options-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .mcq-opt {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .mcq-opt.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .helper-text {
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-muted);
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        kbd {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 12px;
+            box-shadow: 0 2px 0 #cbd5e1;
+        }
+
+        /* GRADING VIEW */
+        .grading-container {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .grading-q { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .grading-ans { font-size: 40px; font-weight: 800; color: var(--primary); margin: 20px 0; }
+        .grading-actions { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+        .grade-btn { 
+            padding: 20px 40px; border-radius: 12px; font-size: 18px; cursor: pointer; border: none; font-weight: 700; transition: transform 0.1s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .grade-btn:active { transform: scale(0.95); }
+        .grade-correct { background: #dcfce7; color: #166534; }
+        .grade-correct:hover { background: #bbf7d0; }
+        .grade-wrong { background: #fee2e2; color: #991b1b; }
+        .grade-wrong:hover { background: #fecaca; }
+        .grade-key { font-size: 12px; opacity: 0.7; font-weight: normal; }
+
+        /* RESULTS VIEW */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--text-main); margin-top: 8px; }
+        .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ADVANCED ANALYTICS */
+        .analytics-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .analytics-card {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .score-grade {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .flow-bar-wrapper {
+            margin-top: 15px;
+            display: flex;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+        
+        .flow-segment { height: 100%; }
+        .seg-flow { background: var(--success); }
+        .seg-avg { background: var(--secondary); }
+        .seg-struggle { background: var(--danger); }
+        
+        .flow-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* CHART */
+        .chart-container {
+            margin: 40px 0;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--primary);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: height 0.5s ease;
+            min-height: 4px;
+            opacity: 0.8;
+        }
+
+        .chart-bar:hover { opacity: 1; }
+        .chart-bar.slow { background: var(--danger); }
+        .chart-bar.fast { background: var(--success); }
+        .chart-bar.skipped { background: var(--secondary); opacity: 0.4; }
+        /* Grading Colors */
+        .chart-bar.is-correct { background: var(--success) !important; }
+        .chart-bar.is-wrong { background: var(--danger) !important; }
+
+        .chart-bar .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-bottom: 4px;
+            z-index: 10;
+        }
+
+        .chart-bar:hover .tooltip { opacity: 1; }
+
+        /* TRENDS VIEW SPECIFIC */
+        .trend-summary {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .trend-summary h3 { margin: 0; font-size: 16px; opacity: 0.9; font-weight: 500; }
+        .trend-summary .big-stat { font-size: 32px; font-weight: 700; margin: 10px 0 5px 0; }
+        .trend-summary .stat-desc { font-size: 14px; opacity: 0.8; }
+
+        .trend-graph-wrapper {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .trend-bars {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 12px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .t-bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .t-bar {
+            width: 60%;
+            background: var(--primary);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s;
+            min-height: 4px;
+        }
+        
+        .t-bar.improved { background: var(--success); }
+        .t-bar.worse { background: var(--danger); }
+
+        .t-label {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .t-value {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .problem-area {
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .problem-area h4 { margin: 0 0 8px 0; color: #991b1b; }
+        .problem-area p { margin: 0; font-size: 14px; color: #7f1d1d; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(2px);
+            animation: fadeIn 0.2s;
+        }
+        
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        .modal h3 { margin-top: 0; color: var(--text-main); }
+        .modal p { color: var(--text-muted); font-size: 14px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions button { flex: 1; }
+
+        /* RESTART OVERLAY */
+        #restartOverlay {
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 200;
+        }
+        #restartCount {
+            font-size: 64px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+        #restartMessage {
+            color: #cbd5e1;
+            font-size: 18px;
+        }
+
+        /* TABLE */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .data-table th { text-align: left; padding: 12px; background: #f8fafc; color: var(--text-muted); font-weight: 600; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .data-table tr:last-child td { border-bottom: none; }
+        
+        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* UPLOAD BUTTON HIDDEN INPUT */
+        #csvInput { display: none; }
+        #trendInput { display: none; }
+        #resumeInput { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Tiber
+            </div>
+            <div id="sessionBadge" style="font-size: 14px; font-weight: 600; color: var(--text-muted); display:none;"></div>
+        </header>
+
+        <!-- VIEW 1: SETUP -->
+        <div id="setupView" class="view-section active">
+            <h2 style="margin-top: 0;">New Practice Session</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Configure your timer before you start writing in your workbook.</p>
+
+            <div class="form-group">
+                <label>Subject / Chapter Name</label>
+                <input type="text" id="sessionNameInput" placeholder="e.g. Calculus Integration - Ex 5.2">
+            </div>
+
+            <!-- MCQ Toggle -->
+            <label class="toggle-wrapper">
+                <input type="checkbox" id="mcqModeInput">
+                <div class="toggle-text">
+                    <strong>Enable MCQ Mode</strong>
+                    <span>Input answers (A/B/C/D) and auto-grade at the end.</span>
+                </div>
+            </label>
+
+            <div style="display: flex; gap: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Number of Questions</label>
+                    <input type="number" id="qCountInput" placeholder="20" value="10">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Target Time per Q (Sec)</label>
+                    <input type="number" id="targetTimeInput" placeholder="Optional (e.g. 60)">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="app.startSession()">
+                Start Practice <svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+
+            <div class="upload-divider">OR</div>
+
+            <div style="display:flex; flex-wrap: wrap; gap: 10px;">
+                <button class="btn btn-outline" style="flex: 1; border-color: var(--primary); color: var(--primary); background: #f0fdf4;" onclick="document.getElementById('resumeInput').click()">
+                     <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    Resume Session
+                </button>
+                <input type="file" id="resumeInput" accept=".csv" onchange="app.handleResumeUpload(event)">
+
+                <button class="btn btn-outline" style="flex: 1" onclick="document.getElementById('csvInput').click()">
+                    Analyze Single
+                </button>
+                <input type="file" id="csvInput" accept=".csv" onchange="app.handleFileUpload(event)">
+
+                <button class="btn btn-outline trend-upload-btn" style="flex: 1" onclick="document.getElementById('trendInput').click()">
+                    Track Trends
+                </button>
+                <input type="file" id="trendInput" accept=".csv" multiple onchange="app.handleTrendUpload(event)">
+            </div>
+            <p style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 8px;">For progress tracking, select multiple CSV files.</p>
+        </div>
+
+        <!-- VIEW 2: TIMER -->
+        <div id="timerView" class="view-section">
+            <div class="timer-layout">
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar-fill"></div>
+                </div>
+
+                <div class="question-badge" id="currentQDisplay">Question 1</div>
+                
+                <div class="timer-display" id="mainTimer">0:00</div>
+
+                <!-- MCQ Options (Only visible in MCQ Mode) -->
+                <div id="mcqOptionsArea" class="mcq-options-row" style="display:none;">
+                    <div class="mcq-opt" id="optA">A</div>
+                    <div class="mcq-opt" id="optB">B</div>
+                    <div class="mcq-opt" id="optC">C</div>
+                    <div class="mcq-opt" id="optD">D</div>
+                </div>
+                
+                <div class="controls-row">
+                    <button class="btn btn-secondary" onclick="app.togglePause()" id="pauseBtn">
+                        <svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                        Pause
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="app.skipQuestion()" title="Mark as Skipped and Next">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+                        Skip
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="app.openManualLog()" title="Log time manually">
+                         <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Already Done?
+                    </button>
+
+                    <button class="btn btn-secondary" id="undoBtn" onclick="app.restartQuestion()" title="Restart current question timer">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/></svg>
+                        Restart Q
+                    </button>
+                    <button class="btn btn-danger" onclick="app.saveAndExit()">
+                        Save & Exit
+                    </button>
+                </div>
+
+                <div class="helper-text" id="helperText">
+                    Solve in your workbook. Press <kbd>ENTER</kbd> when done.<br>
+                    Press <kbd>SPACE</kbd> to Pause/Resume. <kbd>S</kbd> to Skip. <kbd>Q</kbd> to Restart.
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2.5: GRADING (New for MCQs) -->
+        <div id="gradingView" class="view-section">
+            <h2 style="text-align: center;">Rapid Grading</h2>
+            <p style="text-align: center; color: var(--text-muted);">Check your textbook. Mark your answers.</p>
+            
+            <div class="grading-container">
+                <div class="grading-q" id="gradeQDisplay">Question 1</div>
+                <div style="font-size: 14px; color: var(--text-muted);">You Selected:</div>
+                <div class="grading-ans" id="gradeAnsDisplay">A</div>
+                
+                <div class="grading-actions">
+                    <button class="grade-btn grade-wrong" onclick="app.markGrade(false)">
+                        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        WRONG
+                        <span class="grade-key">Press Space</span>
+                    </button>
+                    <button class="grade-btn grade-correct" onclick="app.markGrade(true)">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        CORRECT
+                        <span class="grade-key">Press Enter</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: RESULTS & ANALYSIS -->
+        <div id="resultsView" class="view-section">
+            <h2 style="text-align: center; margin-bottom: 5px;">Performance Analysis</h2>
+            <p id="resultSubtitle" style="text-align: center; color: var(--text-muted); margin-bottom: 30px;"></p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Time</div>
+                    <div class="stat-value" id="statTotalTime">0:00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="statScore">--</div>
+                    <div class="stat-sub" id="statAccuracy"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Pace</div>
+                    <div class="stat-value" id="statAvgTime">0s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fastest</div>
+                    <div class="stat-value" id="statFastest">Q-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Skipped</div>
+                    <div class="stat-value" id="statSkipped">0</div>
+                </div>
+            </div>
+
+            <!-- New Advanced Analysis Row -->
+            <div class="analytics-row">
+                <div class="analytics-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Time Impact Analysis</div>
+                    <div style="font-size: 14px; line-height: 1.5;" id="timeImpactAnalysis">
+                        Not enough data to correlate time with accuracy.
+                    </div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Flow vs. Struggle</div>
+                    <div class="flow-bar-wrapper">
+                        <div id="barFlow" class="flow-segment seg-flow" style="width: 30%"></div>
+                        <div id="barAvg" class="flow-segment seg-avg" style="width: 40%"></div>
+                        <div id="barStruggle" class="flow-segment seg-struggle" style="width: 30%"></div>
+                    </div>
+                    <div class="flow-legend">
+                        <span style="color: var(--success)">● Flow (Fast)</span>
+                        <span style="color: var(--secondary)">● Steady</span>
+                        <span style="color: var(--danger)">● Struggle (Slow)</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 16px; margin-bottom: 10px;">Pace Timeline</h3>
+            <div id="chartContainer" class="chart-container">
+                <!-- Bars injected by JS -->
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex:1" onclick="app.downloadCSV()">Download CSV</button>
+                <button class="btn btn-primary" style="flex:1" onclick="app.reset()">Start New Session</button>
+            </div>
+
+            <details style="margin-top: 20px; cursor: pointer;">
+                <summary style="color: var(--text-muted); font-weight: 600;">View Detailed Data Table</summary>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th id="thAnswer">Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </details>
+        </div>
+
+        <!-- VIEW 4: TRENDS -->
+        <div id="trendsView" class="view-section">
+            <h2 style="text-align: center; margin-bottom: 5px;">Progress Report</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Comparing performance across uploaded sessions</p>
+
+            <div class="trend-summary">
+                <h3>Overall Improvement</h3>
+                <div class="big-stat" id="trendImprovementStat">--%</div>
+                <div class="stat-desc" id="trendImprovementDesc">Comparing your latest session to your average</div>
+            </div>
+
+            <div class="trend-graph-wrapper">
+                <div class="stat-label">Average Pace (Time per Question)</div>
+                <div class="trend-bars" id="trendPaceBars"></div>
+            </div>
+
+            <div class="trend-graph-wrapper">
+                <div class="stat-label">Consistency (Standard Deviation)</div>
+                <div class="trend-bars" id="trendConsistencyBars"></div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="app.reset()">Back to Home</button>
+        </div>
+
+        <!-- Restart Countdown Overlay -->
+        <div id="restartOverlay" class="modal-overlay">
+            <div style="text-align:center;">
+                <div id="restartCount">5</div>
+                <div id="restartMessage">Restating in 5 seconds...<br>Get back to work!</div>
+            </div>
+        </div>
+
+        <!-- MANUAL LOG MODAL -->
+        <div id="manualLogModal" class="modal-overlay">
+            <div class="modal">
+                <h3>Already Done?</h3>
+                <p>Enter the time you took for Question <span id="manualQNum"></span></p>
+                <div style="display:flex; gap:10px; justify-content:center; margin: 20px 0;">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <input type="number" id="manualMin" placeholder="0" style="width:70px; text-align:center;" min="0">
+                        <label style="font-size:10px; margin-top:4px;">Min</label>
+                    </div>
+                    <span style="font-size:24px; font-weight:bold; margin-top:5px;">:</span>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <input type="number" id="manualSec" placeholder="0" style="width:70px; text-align:center;" min="0" max="59">
+                        <label style="font-size:10px; margin-top:4px;">Sec</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="app.closeManualLog()">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.confirmManualLog()">Log & Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            state: {
+                sessionName: '',
+                totalQuestions: 0,
+                targetTime: 0,
+                isMCQ: false,
+                currentQ: 1,
+                timer: 0,
+                isRunning: false,
+                isPaused: false,
+                currentMCQSelection: null, // 'A', 'B', 'C', 'D' or null
+                history: [], // {qNum, time, skipped, answer, isCorrect}
+                gradingIndex: 0, // For the grading view
+                intervalId: null
+            },
+
+            getEl: (id) => document.getElementById(id),
+            
+            formatTime: (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s.toString().padStart(2, '0')}`;
+            },
+
+            // --- CORE LOGIC ---
+            startSession: () => {
+                const qCount = parseInt(app.getEl('qCountInput').value) || 10;
+                const name = app.getEl('sessionNameInput').value || 'Untitled Session';
+                const target = parseInt(app.getEl('targetTimeInput').value) || 0;
+                const isMCQ = app.getEl('mcqModeInput').checked;
+
+                app.state = {
+                    ...app.state,
+                    sessionName: name,
+                    totalQuestions: qCount,
+                    targetTime: target,
+                    isMCQ: isMCQ,
+                    currentQ: 1,
+                    timer: 0,
+                    history: [],
+                    currentMCQSelection: null,
+                    isRunning: true,
+                    isPaused: false
+                };
+
+                // UI Setup for MCQ vs Standard
+                if (isMCQ) {
+                    app.getEl('mcqOptionsArea').style.display = 'flex';
+                    app.getEl('helperText').innerHTML = `Select <b>A/B/C/D</b>. Press <kbd>ENTER</kbd> to confirm.<br>Shortcuts enabled.`;
+                } else {
+                    app.getEl('mcqOptionsArea').style.display = 'none';
+                    app.getEl('helperText').innerHTML = `Solve in workbook. Press <kbd>ENTER</kbd> when done.<br><kbd>SPACE</kbd> Pause/Resume. <kbd>S</kbd> Skip. <kbd>Q</kbd> Restart.`;
+                }
+
+                app.switchView('timerView');
+                app.getEl('sessionBadge').textContent = name;
+                app.getEl('sessionBadge').style.display = 'block';
+                
+                app.updateTimerUI();
+                app.startTimerInterval();
+            },
+
+            // --- RESUME LOGIC ---
+            handleResumeUpload: (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    app.resumeFromCSV(e.target.result, file.name.replace('.csv', ''));
+                };
+                reader.readAsText(file);
+            },
+
+            resumeFromCSV: (csvText, filename) => {
+                 const lines = csvText.trim().split('\n');
+                if (lines.length < 2) { alert("Invalid CSV format"); return; }
+
+                const history = [];
+                let maxQ = 0;
+                // Detect if CSV has answer column (index 4 usually if added)
+                // New Format: Question,Time,Formatted,Status,Answer,IsCorrect
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length >= 2) {
+                        const qNum = parseInt(cols[0]);
+                        const time = parseInt(cols[1]);
+                        const status = cols[3] || '';
+                        const answer = cols[4] || '';
+                        const isCorrect = cols[5] === 'true'; // simple string check
+                        
+                        if (!isNaN(qNum) && !isNaN(time)) {
+                            history.push({
+                                qNum: qNum,
+                                time: time,
+                                skipped: status.includes('Skipped'),
+                                answer: answer,
+                                isCorrect: isCorrect
+                            });
+                            if (qNum > maxQ) maxQ = qNum;
+                        }
+                    }
+                }
+                
+                const nextQ = maxQ + 1;
+                app.state = {
+                    sessionName: filename.replace('_results', ''),
+                    totalQuestions: Math.max(nextQ + 9, 20),
+                    targetTime: 0,
+                    isMCQ: false, // Hard to detect from CSV easily without metadata header, defaulting off
+                    currentQ: nextQ,
+                    timer: 0,
+                    history: history,
+                    isRunning: true,
+                    isPaused: false,
+                    currentMCQSelection: null,
+                    intervalId: null
+                };
+
+                app.switchView('timerView');
+                app.getEl('mcqOptionsArea').style.display = 'none'; // Resume assumes standard unless complex logic added
+                app.getEl('sessionBadge').textContent = app.state.sessionName;
+                app.getEl('sessionBadge').style.display = 'block';
+                app.updateTimerUI();
+                app.startTimerInterval();
+            },
+
+            // --- ANALYSIS UPLOAD ---
+            handleFileUpload: (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    app.parseCSVForAnalysis(e.target.result, file.name.replace('.csv', ''));
+                };
+                reader.readAsText(file);
+            },
+
+            parseCSVForAnalysis: (csvText, filename) => {
+                const lines = csvText.trim().split('\n');
+                if (lines.length < 2) { alert("Invalid CSV"); return; }
+                const history = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length >= 2) {
+                        const qNum = parseInt(cols[0]);
+                        const time = parseInt(cols[1]);
+                        const status = cols[3] || '';
+                        const answer = cols[4] || null;
+                        const isCorrect = cols[5] === 'true';
+                        if (!isNaN(qNum) && !isNaN(time)) {
+                            history.push({qNum, time, skipped: status.includes('Skipped'), answer, isCorrect});
+                        }
+                    }
+                }
+                if (history.length > 0) {
+                    app.state.history = history;
+                    app.state.sessionName = filename;
+                    app.state.totalQuestions = history.length;
+                    app.calculateStats();
+                    app.switchView('resultsView');
+                }
+            },
+
+            handleTrendUpload: (event) => {
+                 const files = Array.from(event.target.files);
+                if (files.length < 2) { alert("Select 2+ files."); return; }
+                const promises = files.map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve({ name: file.name.replace('.csv',''), text: e.target.result });
+                        reader.onerror = reject;
+                        reader.readAsText(file);
+                    });
+                });
+                Promise.all(promises).then(results => app.calculateTrends(results));
+            },
+
+            calculateTrends: (sessions) => {
+                const dataPoints = sessions.map(session => {
+                    const lines = session.text.trim().split('\n');
+                    const history = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const cols = lines[i].split(',');
+                        if (cols.length >= 2) {
+                            const time = parseInt(cols[1]);
+                            if (!isNaN(time)) history.push({ time, skipped: (cols[3]||'').includes('Skipped') });
+                        }
+                    }
+                    const solved = history.filter(h => !h.skipped);
+                    const avgTime = solved.length ? solved.reduce((a,b)=>a+b.time,0)/solved.length : 0;
+                    let stdDev = 0;
+                    if(solved.length > 1) {
+                         const variance = solved.reduce((acc, val) => acc + Math.pow(val.time - avgTime, 2), 0) / solved.length;
+                         stdDev = Math.sqrt(variance);
+                    }
+                    return { name: session.name, avgTime, stdDev };
+                });
+                dataPoints.sort((a,b) => a.name.localeCompare(b.name));
+                const latest = dataPoints[dataPoints.length - 1];
+                const previous = dataPoints.slice(0, dataPoints.length - 1);
+                let improvementMsg = "Not enough data";
+                let pctDiffDisplay = "--";
+                if (previous.length > 0) {
+                    const prevAvgPace = previous.reduce((a,b) => a + b.avgTime, 0) / previous.length;
+                    const diff = prevAvgPace - latest.avgTime; 
+                    const pctDiff = (diff / prevAvgPace) * 100;
+                    if (pctDiff > 0) {
+                        pctDiffDisplay = `${Math.abs(Math.round(pctDiff))}% Faster`;
+                        improvementMsg = "You are solving questions faster than your historical average.";
+                    } else {
+                         pctDiffDisplay = `${Math.abs(Math.round(pctDiff))}% Slower`;
+                         improvementMsg = "Your pace was slower in this recent session compared to average.";
+                    }
+                }
+                app.getEl('trendImprovementStat').textContent = pctDiffDisplay;
+                app.getEl('trendImprovementDesc').textContent = improvementMsg;
+
+                const renderBars = (containerId, key) => {
+                    const container = app.getEl(containerId);
+                    container.innerHTML = '';
+                    const maxVal = Math.max(...dataPoints.map(d => d[key]));
+                    dataPoints.forEach(d => {
+                        const group = document.createElement('div');
+                        group.className = 't-bar-group';
+                        const valueDiv = document.createElement('div');
+                        valueDiv.className = 't-value';
+                        valueDiv.textContent = Math.round(d[key]) + 's';
+                        const bar = document.createElement('div');
+                        bar.className = 't-bar';
+                        bar.style.height = Math.max((d[key] / maxVal) * 100, 10) + '%';
+                        if (d === latest && previous.length > 0) {
+                             const prevAvg = previous.reduce((a,b) => a + b[key], 0) / previous.length;
+                             if (d[key] < prevAvg) bar.classList.add('improved');
+                             else bar.classList.add('worse');
+                        }
+                        const label = document.createElement('div');
+                        label.className = 't-label';
+                        label.textContent = d.name;
+                        group.appendChild(valueDiv);
+                        group.appendChild(bar);
+                        group.appendChild(label);
+                        container.appendChild(group);
+                    });
+                };
+                renderBars('trendPaceBars', 'avgTime');
+                renderBars('trendConsistencyBars', 'stdDev');
+                app.switchView('trendsView');
+            },
+
+            // --- TIMER LOGIC ---
+            startTimerInterval: () => {
+                if (app.state.intervalId) clearInterval(app.state.intervalId);
+                app.state.intervalId = setInterval(() => {
+                    if (!app.state.isPaused) {
+                        app.state.timer++;
+                        app.updateTimerUI();
+                    }
+                }, 1000);
+            },
+
+            togglePause: () => {
+                app.state.isPaused = !app.state.isPaused;
+                const btn = app.getEl('pauseBtn');
+                if (app.state.isPaused) {
+                    btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Resume`;
+                    btn.style.background = '#e0f2fe';
+                    btn.style.color = '#0284c7';
+                } else {
+                    btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause`;
+                    btn.style.background = '#f1f5f9';
+                    btn.style.color = 'var(--text-main)';
+                }
+            },
+
+            // --- MCQ INPUT ---
+            selectMCQOption: (opt) => {
+                app.state.currentMCQSelection = opt;
+                // Visual update
+                ['A','B','C','D'].forEach(o => {
+                    const el = document.getElementById('opt' + o);
+                    if(o === opt) el.classList.add('selected');
+                    else el.classList.remove('selected');
+                });
+            },
+
+            nextQuestion: (isSkipped = false, manualTime = null) => {
+                if (!app.state.isRunning || app.state.isPaused) return;
+
+                const timeToLog = manualTime !== null ? manualTime : app.state.timer;
+                const answer = app.state.currentMCQSelection;
+
+                app.state.history.push({
+                    qNum: app.state.currentQ,
+                    time: timeToLog,
+                    skipped: isSkipped,
+                    answer: answer,
+                    isCorrect: null // pending grading
+                });
+
+                if (app.state.currentQ >= app.state.totalQuestions) {
+                    app.finishSession(); 
+                } else {
+                    app.state.currentQ++;
+                    app.state.timer = 0;
+                    app.state.currentMCQSelection = null;
+                    app.updateTimerUI();
+                }
+            },
+
+            skipQuestion: () => {
+                app.nextQuestion(true);
+            },
+
+            // --- RESTART & MANUAL LOGIC ---
+            openManualLog: () => {
+                if (!app.state.isPaused) app.togglePause();
+                app.getEl('manualQNum').textContent = app.state.currentQ;
+                app.getEl('manualMin').value = '';
+                app.getEl('manualSec').value = '';
+                app.getEl('manualLogModal').classList.add('active');
+                app.getEl('manualMin').focus();
+            },
+
+            closeManualLog: () => {
+                app.getEl('manualLogModal').classList.remove('active');
+            },
+
+            confirmManualLog: () => {
+                const mins = parseInt(app.getEl('manualMin').value) || 0;
+                const secs = parseInt(app.getEl('manualSec').value) || 0;
+                const totalSeconds = (mins * 60) + secs;
+                app.closeManualLog();
+                app.state.isPaused = false; 
+                app.nextQuestion(false, totalSeconds);
+                const btn = app.getEl('pauseBtn');
+                btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause`;
+                btn.style.background = '#f1f5f9';
+                btn.style.color = 'var(--text-main)';
+            },
+
+            restartQuestion: () => {
+                app.state.isPaused = true;
+                const overlay = app.getEl('restartOverlay');
+                const countEl = app.getEl('restartCount');
+                const msgEl = app.getEl('restartMessage');
+                overlay.classList.add('active');
+                
+                let countdown = 5;
+                countEl.textContent = countdown;
+                msgEl.innerHTML = `Restarting in ${countdown} seconds...<br>Get back to work!`;
+                
+                const cdInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        countEl.textContent = countdown;
+                        msgEl.innerHTML = `Restarting in ${countdown} seconds...<br>Get back to work!`;
+                    } else {
+                        clearInterval(cdInterval);
+                        overlay.classList.remove('active');
+                        app.state.timer = 0;
+                        app.state.isPaused = false;
+                        app.state.currentMCQSelection = null;
+                        app.updateTimerUI();
+                        app.getEl('pauseBtn').innerHTML = `<svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> Pause`;
+                        app.getEl('pauseBtn').style.background = '#f1f5f9';
+                        app.getEl('pauseBtn').style.color = 'var(--text-main)';
+                    }
+                }, 1000);
+            },
+
+            // --- ENDING SESSION ---
+            saveAndExit: () => {
+                // If exiting early in MCQ mode, do we allow grading? 
+                // Yes, let's process what we have.
+                clearInterval(app.state.intervalId);
+                app.state.isRunning = false;
+                if (app.state.isMCQ && app.state.history.length > 0) {
+                    app.startGrading();
+                } else {
+                    app.downloadCSV();
+                    app.calculateStats();
+                    app.switchView('resultsView');
+                }
+            },
+
+            finishSession: () => {
+                clearInterval(app.state.intervalId);
+                app.state.isRunning = false;
+                if (app.state.isMCQ) {
+                    app.startGrading();
+                } else {
+                    app.calculateStats();
+                    app.switchView('resultsView');
+                }
+            },
+
+            // --- GRADING SYSTEM ---
+            startGrading: () => {
+                app.state.gradingIndex = 0;
+                // Filter out skipped questions? User might want to grade them if they guessed? 
+                // Let's only skip questions that have NO Answer recorded (if we allowed that).
+                // But in this logic, we record skipped as skipped. 
+                // We'll walk through all history. If skipped, maybe auto-mark wrong or just skip?
+                // Let's show everything.
+                app.switchView('gradingView');
+                app.updateGradingUI();
+            },
+
+            updateGradingUI: () => {
+                if (app.state.gradingIndex >= app.state.history.length) {
+                    // Done grading
+                    app.calculateStats();
+                    app.switchView('resultsView');
+                    return;
+                }
+
+                const item = app.state.history[app.state.gradingIndex];
+                app.getEl('gradeQDisplay').textContent = `Question ${item.qNum}`;
+                
+                const ansDisplay = item.answer ? item.answer : (item.skipped ? 'Skipped' : '-');
+                app.getEl('gradeAnsDisplay').textContent = ansDisplay;
+                app.getEl('gradeAnsDisplay').style.color = item.skipped ? 'var(--text-muted)' : 'var(--primary)';
+            },
+
+            markGrade: (isCorrect) => {
+                app.state.history[app.state.gradingIndex].isCorrect = isCorrect;
+                app.state.gradingIndex++;
+                app.updateGradingUI();
+            },
+
+            updateTimerUI: () => {
+                const display = app.getEl('mainTimer');
+                display.textContent = app.formatTime(app.state.timer);
+                
+                if(app.getEl('undoBtn')) app.getEl('undoBtn').disabled = false;
+
+                // Visual update for MCQ selection reset
+                if (app.state.isMCQ && !app.state.currentMCQSelection) {
+                     ['A','B','C','D'].forEach(o => document.getElementById('opt' + o).classList.remove('selected'));
+                }
+
+                if (app.state.targetTime > 0) {
+                    display.classList.remove('warning', 'danger');
+                    if (app.state.timer > app.state.targetTime) display.classList.add('danger');
+                    else if (app.state.timer > app.state.targetTime * 0.8) display.classList.add('warning');
+                }
+
+                app.getEl('currentQDisplay').textContent = `Question ${app.state.currentQ} of ${app.state.totalQuestions}`;
+                const pct = ((app.state.currentQ - 1) / app.state.totalQuestions) * 100;
+                app.getEl('progressBar').style.width = `${pct}%`;
+            },
+
+            switchView: (viewId) => {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                app.getEl(viewId).classList.add('active');
+            },
+
+            // --- ANALYTICS ENGINE ---
+            calculateStats: () => {
+                const history = app.state.history;
+                if (history.length === 0) return;
+
+                const totalSeconds = history.reduce((acc, curr) => acc + curr.time, 0);
+                const solvedQuestions = history.filter(h => !h.skipped);
+                const skippedQuestions = history.filter(h => h.skipped);
+                
+                // Score Calculation
+                const correctCount = history.filter(h => h.isCorrect).length;
+                const score = `${correctCount}/${history.length}`;
+                const accuracy = history.length > 0 ? Math.round((correctCount / history.length) * 100) + '%' : '0%';
+
+                const avgSeconds = solvedQuestions.length > 0 
+                    ? Math.round(solvedQuestions.reduce((acc, curr) => acc + curr.time, 0) / solvedQuestions.length)
+                    : 0;
+                
+                let minQ = solvedQuestions[0];
+                if (solvedQuestions.length > 0) {
+                    solvedQuestions.forEach(h => { if (h.time < minQ.time) minQ = h; });
+                }
+
+                app.getEl('resultSubtitle').textContent = `${app.state.sessionName} • ${history.length} Questions`;
+                app.getEl('statTotalTime').textContent = app.formatTime(totalSeconds);
+                app.getEl('statScore').textContent = score;
+                app.getEl('statAccuracy').textContent = accuracy + " Accuracy";
+                app.getEl('statAvgTime').textContent = app.formatTime(avgSeconds);
+                app.getEl('statFastest').textContent = minQ ? `Q${minQ.qNum} (${app.formatTime(minQ.time)})` : 'N/A';
+                app.getEl('statSkipped').textContent = skippedQuestions.length;
+
+                // Time vs Accuracy Correlation
+                const correctAvg = history.filter(h=>h.isCorrect).reduce((a,b)=>a+b.time,0) / (history.filter(h=>h.isCorrect).length || 1);
+                const wrongAvg = history.filter(h=>!h.isCorrect && !h.skipped).reduce((a,b)=>a+b.time,0) / (history.filter(h=>!h.isCorrect && !h.skipped).length || 1);
+                
+                let timeImpactMsg = "";
+                if (correctCount > 0 && history.length - correctCount > 0) {
+                    const diff = Math.round(Math.abs(correctAvg - wrongAvg));
+                    if (correctAvg < wrongAvg) {
+                        timeImpactMsg = `You spend roughly <b>${diff}s longer</b> on questions you get wrong. <br>Tip: If a question takes too long, you are likely to make a mistake. Skip earlier.`;
+                    } else {
+                        timeImpactMsg = `You answer correct questions <b>${diff}s slower</b> than wrong ones? <br>This is unusual. You might be rushing your errors.`;
+                    }
+                } else {
+                    timeImpactMsg = "Solve more questions to see Time vs Accuracy analysis.";
+                }
+                app.getEl('timeImpactAnalysis').innerHTML = timeImpactMsg;
+
+                // Chart
+                const maxTime = Math.max(...history.map(h => h.time));
+                const chartContainer = app.getEl('chartContainer');
+                chartContainer.innerHTML = ''; 
+                history.forEach(h => {
+                    const bar = document.createElement('div');
+                    bar.className = 'chart-bar';
+                    const heightPct = Math.max((h.time / maxTime) * 100, 5);
+                    bar.style.height = `${heightPct}%`;
+                    
+                    // Colors
+                    if (h.skipped) bar.classList.add('skipped');
+                    else if (h.isCorrect === true) bar.classList.add('is-correct');
+                    else if (h.isCorrect === false) bar.classList.add('is-wrong');
+                    
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = `Q${h.qNum}: ${app.formatTime(h.time)} ${h.answer ? '('+h.answer+')' : ''}`;
+                    bar.appendChild(tooltip);
+                    chartContainer.appendChild(bar);
+                });
+
+                // Table
+                const thAnswer = document.getElementById('thAnswer');
+                thAnswer.style.display = app.state.isMCQ ? 'table-cell' : 'none';
+
+                const tbody = app.getEl('dataTableBody');
+                tbody.innerHTML = history.map(h => {
+                    let status = '';
+                    if (h.skipped) status = '⏭️ Skipped';
+                    else if (h.isCorrect === true) status = '✅ Correct';
+                    else if (h.isCorrect === false) status = '❌ Wrong';
+                    else status = 'Completed';
+
+                    const ansCell = app.state.isMCQ ? `<td style="font-weight:bold;">${h.answer || '-'}</td>` : '';
+
+                    return `
+                    <tr>
+                        <td>Question ${h.qNum}</td>
+                        <td style="font-family:monospace; font-weight:600;">${app.formatTime(h.time)}</td>
+                        <td>${status}</td>
+                        ${ansCell}
+                    </tr>
+                `}).join('');
+            },
+
+            downloadCSV: () => {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Question,Time (Seconds),Formatted Time,Status,Answer,IsCorrect\n";
+                app.state.history.forEach(row => {
+                    csvContent += `${row.qNum},${row.time},${app.formatTime(row.time)},${row.skipped ? 'Skipped' : 'Completed'},${row.answer || ''},${row.isCorrect}\n`;
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `${app.state.sessionName.replace(/\s+/g, '_')}_results.csv`);
+                document.body.appendChild(link);
+                link.click();
+            },
+
+            reset: () => {
+                app.state.isRunning = false;
+                app.state.isPaused = false;
+                app.getEl('sessionNameInput').value = '';
+                app.getEl('qCountInput').value = 10;
+                app.getEl('mainTimer').textContent = '0:00';
+                app.getEl('sessionBadge').style.display = 'none';
+                app.getEl('csvInput').value = '';
+                app.getEl('trendInput').value = '';
+                app.getEl('resumeInput').value = '';
+                app.switchView('setupView');
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            
+            // Grading Mode Shortcuts
+            if (document.getElementById('gradingView').classList.contains('active')) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    app.markGrade(false); // Wrong
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    app.markGrade(true); // Correct
+                }
+                return;
+            }
+
+            // Timer Mode Shortcuts
+            if (!app.state.isRunning) return;
+
+            // ENTER logic
+            if (e.key === 'Enter') {
+                if (!app.state.isPaused) {
+                    e.preventDefault(); 
+                    app.nextQuestion(false);
+                }
+            }
+            // SPACE logic
+            if (e.code === 'Space' || e.key === ' ') {
+                if(document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    app.togglePause();
+                }
+            }
+            // S logic (Skip)
+            if (e.key.toLowerCase() === 's') {
+                if (!app.state.isPaused && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    app.skipQuestion();
+                }
+            }
+            // Q logic (Restart)
+            if (e.key.toLowerCase() === 'q') {
+                if (!app.state.isPaused && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    app.restartQuestion();
+                }
+            }
+            // MCQ Inputs (A, B, C, D)
+            if (app.state.isMCQ && !app.state.isPaused) {
+                const k = e.key.toUpperCase();
+                if (['A','B','C','D'].includes(k)) {
+                    app.selectMCQOption(k);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
