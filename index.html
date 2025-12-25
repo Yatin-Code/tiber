@@ -63,6 +63,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
         }
 
         /* SECTIONS (View Management) */
@@ -544,6 +545,19 @@
             font-size: 18px;
         }
 
+        /* DOCS SPECIFIC */
+        .docs-section {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .docs-section h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        .docs-section h3 { margin-top: 30px; margin-bottom: 10px; }
+        .docs-section p { line-height: 1.6; color: var(--text-muted); margin-bottom: 15px; }
+        .docs-section ul { padding-left: 20px; color: var(--text-muted); }
+        .docs-section li { margin-bottom: 8px; line-height: 1.5; }
+        .docs-section strong { color: var(--text-main); }
+
         /* TABLE */
         .data-table {
             width: 100%;
@@ -569,15 +583,88 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <div class="logo">
+            <div class="logo" onclick="app.switchView('introView')">
                 <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 Tiber
             </div>
             <div id="sessionBadge" style="font-size: 14px; font-weight: 600; color: var(--text-muted); display:none;"></div>
         </header>
 
+        <!-- VIEW 0: INTRO -->
+        <div id="introView" class="view-section active">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="margin-bottom: 30px;">
+                    <svg class="icon" viewBox="0 0 24 24" style="width: 80px; height: 80px; color: var(--primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <h1 style="font-size: 42px; margin-bottom: 10px; color: var(--text-main); letter-spacing: -1px;">Tiber</h1>
+                <p style="font-size: 18px; color: var(--text-muted); margin-bottom: 40px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                    Master your exam timing with advanced analytics, MCQ grading, and performance insights.
+                </p>
+                
+                <div style="display: grid; gap: 20px; text-align: left; max-width: 400px; margin: 0 auto 40px auto; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: var(--primary-light); padding: 8px; border-radius: 6px; color: var(--primary);"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                        <div><strong>Precision Timer</strong><br><span style="font-size:12px; color:var(--text-muted)">Track time per question accurately</span></div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: #dcfce7; padding: 8px; border-radius: 6px; color: #166534;"><svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <div><strong>MCQ Mode</strong><br><span style="font-size:12px; color:var(--text-muted)">Input answers & rapid grading</span></div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: #fff7ed; padding: 8px; border-radius: 6px; color: #9a3412;"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+                        <div><strong>Analytics</strong><br><span style="font-size:12px; color:var(--text-muted)">Visualize pace, consistency & flow</span></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <button class="btn btn-primary" onclick="app.switchView('setupView')" style="font-size: 18px; padding: 16px 48px; width: 100%; max-width: 300px;">
+                        Get Started
+                    </button>
+                    <button class="btn btn-outline" onclick="app.switchView('docsView')" style="border: none; max-width: 200px;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Read Documentation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: DOCS -->
+        <div id="docsView" class="view-section">
+            <div class="docs-section">
+                <h2>User Guide & Documentation</h2>
+                <p>Welcome to Tiber! This guide will help you understand the features and shortcuts available to maximize your study sessions.</p>
+
+                <h3>1. Application Modes</h3>
+                <ul>
+                    <li><strong>Standard Mode:</strong> The default timer. Best for solving problems in a workbook where you just want to track pace per question.</li>
+                    <li><strong>MCQ Mode:</strong> Enable this toggle in setup. Allows you to input answers (A, B, C, D) using the keyboard. At the end, you enter a "Rapid Grading" phase to check your work against an answer key.</li>
+                </ul>
+
+                <h3>2. Keyboard Shortcuts</h3>
+                <p>Keep your hands on the keyboard for maximum efficiency.</p>
+                <ul>
+                    <li><kbd>SPACE</kbd> : Pause or Resume the timer.</li>
+                    <li><kbd>ENTER</kbd> : Log the current question as done and move to the next.</li>
+                    <li><kbd>S</kbd> : Skip the current question (marks as Skipped in reports).</li>
+                    <li><kbd>Q</kbd> : Restart the current question. Triggers a 5-second countdown to reset your mental state.</li>
+                    <li><kbd>A</kbd> / <kbd>B</kbd> / <kbd>C</kbd> / <kbd>D</kbd> : Select an option in MCQ Mode.</li>
+                </ul>
+
+                <h3>3. Data & Analysis</h3>
+                <ul>
+                    <li><strong>CSV Export:</strong> At the end of every session, click "Download CSV" to save your results locally.</li>
+                    <li><strong>Resume Session:</strong> Upload a previously downloaded CSV to continue from where you left off (e.g., Question 15 of 50).</li>
+                    <li><strong>Track Trends:</strong> Select 2 or more CSV files in the "Track Trends" upload to see a graph of your improvement over time (Pace & Consistency).</li>
+                </ul>
+
+                <button class="btn btn-secondary" onclick="app.switchView('introView')" style="margin-top: 30px;">
+                    ← Back to Home
+                </button>
+            </div>
+        </div>
+
         <!-- VIEW 1: SETUP -->
-        <div id="setupView" class="view-section active">
+        <div id="setupView" class="view-section">
             <h2 style="margin-top: 0;">New Practice Session</h2>
             <p style="color: var(--text-muted); margin-bottom: 30px;">Configure your timer before you start writing in your workbook.</p>
 
